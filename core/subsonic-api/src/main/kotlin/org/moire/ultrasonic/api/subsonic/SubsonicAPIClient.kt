@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import okhttp3.Credentials
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -36,10 +37,19 @@ private const val READ_TIMEOUT = 60_000L
  */
 class SubsonicAPIClient(
     config: SubsonicClientConfiguration,
-    private val okLogger: HttpLoggingInterceptor.Logger = HttpLoggingInterceptor.Logger.DEFAULT,
-    baseOkClient: OkHttpClient = OkHttpClient.Builder().build()
+    private val okLogger: HttpLoggingInterceptor.Logger = HttpLoggingInterceptor.Logger.DEFAULT
 ) {
     private val versionInterceptor = VersionInterceptor(config.minimalProtocolVersion)
+
+    val baseOkClient = OkHttpClient().newBuilder().addInterceptor { chain ->
+        val originalRequest = chain.request()
+
+        val builder = originalRequest.newBuilder()
+                .header("Authorization", Credentials.basic("user:TODO", "password:TODO"))
+        val newRequest = builder.build()
+        chain.proceed(newRequest)
+    }.build()
+
 
     private val proxyPasswordInterceptor = ProxyPasswordInterceptor(
         config.minimalProtocolVersion,
