@@ -236,7 +236,6 @@ internal class EditServerActivity : AppCompatActivity() {
                 url = URL(urlString)
                 if (
                     urlString != urlString.trim(' ') ||
-                    urlString.contains("@") ||
                     url.host.isNullOrBlank()
                 ) {
                     throw MalformedURLException()
